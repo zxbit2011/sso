@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=0.95, user-scalable=no"/>
+    <title>统一登陆认证 - 工蜂数据</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/msgbox.css"/>
+    <style type="text/css">
+        .input.is-danger, .textarea.is-danger {
+            border-color: #ff3860;
+        }
+    </style>
+    <script src="../static/js/vue/vue-resource.min.js"></script>
+    <script src="../static/js/vue/locale/zh_CN.js"></script>
+</head>
+<body style="padding-top:90px">
+<form class="form" @submit.prevent="submit">
+    <div id="loginalert">
+        <div class="pd20 loginpd">
+            <div class="login-head">
+                <img src="/static/img/hive-logo.png" style="height: 50px;" class="fl"> <!--- <i>登陆</i>-->
+                <div class="fr">
+                    未开通账号？<a id="sigup_now" href="/page/register.html">立即注册</a>
+                </div>
+            </div>
+            <div class="loginwrap clear">
+                <div class="logininput">
+                    <input type="text" name="mobile" class="loginusername" placeholder="请输入您的手机号"
+                           v-model="login.mobile"
+                           v-validate="'required|mobile'"
+                           :class="{'input': true, 'is-danger': errors.has('mobile') }"/>
+                    <span v-show="errors.has('mobile')" class="help is-danger" style='display:none'>{{ errors.first('mobile') }}</span>
+
+                    <input type="password" name="password" class="loginuserpasswordt loginusername" placeholder="密码"
+                           v-model="login.password" v-validate="'required'"
+                           :class="{'input': true, 'is-danger': errors.has('password') }"/>
+
+                    <span v-show="errors.has('password')"
+                          class="help is-danger" style='display:none'>{{ errors.first('password') }}</span>
+                </div>
+                <div class="loginbtn">
+                    <div class="loginsubmit">
+                        <input type="submit" value="登录"/>
+                        <div class="loginsubmiting">
+                            <div class="loginsubmiting_inner">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="logcheckbox fl">
+                        <label>
+                            <input id="bcdl" type="checkbox" checked="true"/>
+                            保持登录
+                        </label>
+                    </div>
+                    <div class="fr">
+                        <a href="##">忘记密码?</a>
+                    </div>
+                    <div class="clear">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="thirdlogin">
+            <div class="pd50">
+                <h4>用第三方帐号直接登录</h4>
+                <div class="unlogin">
+                    <ul>
+                        <li id="sinal"><a href="##"><i></i>微博登录</a></li>
+                        <li id="wechatl"><a href="##"><i></i>微信登录</a></li>
+                        <li id="qql" style="margin-right: 0px;"><a href="##"><i></i>QQ登录</a></li>
+                    </ul>
+                </div>
+                <div class="clear">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script src="/static/js/msgbox.js"></script>
+<script src="/static/js/vue/vue.js"></script>
+<script src="/static/js/vue/vee-validate.js"></script>
+<script src="/static/js/vue/locale/zh_CN.js"></script>
+<script src="/static/js/vue/vee-validate-common.js"></script>
+<script src="/static/js/vue/vue-resource.min.js"></script>
+<script>
+    var isMobile = {
+        messages: {
+            zh_CN: function (field, args) {
+                return field + '必须是11位手机号码'
+            }
+        },
+        getMessage: function () {
+            return "wocha";
+        },
+        validate: function (value, args) {
+            if (value.length != 11 || !/^((13|14|15|17|18)[0-9]{1}\d{8})$/.test(value)) {
+                return false;
+            }
+            return true;
+        }
+    }
+    //自定义验证
+    VeeValidate.Validator.extend('mobile', isMobile);
+    //语言切换
+    Vue.use(VeeValidate, {
+        locale: "zh_CN"
+    });
+    //数据交互
+    Vue.use(VueResource);
+    Vue.http.options.emulateJSON = true;
+    Vue.http.options.headers = {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    };
+    var v = new Vue({
+        el: '.form',
+        data: {
+            login: {}
+        },
+        methods: {
+            //表单提交
+            submit: function () {
+                var the = this;
+                var h = the.$http;
+                this.$validator.validateAll().then(function (f) {
+                    if (f) {
+                        // 这里才是你的表单数据
+                        //请求地址the.login
+                        h.post("/pass/login", the.login).then(function (data) {
+                            if (data.body.ret == 200) {
+                                ZENG.msgbox.show("登陆成功", 1);
+                            } else {
+                                alert(data.body.msg);
+
+                                ZENG.msgbox.show(data.body.msg, 1);
+                            }
+
+                        }).catch(function () {
+                            ZENG.msgbox.show("服务器异常", 1);
+                        });
+
+
+                    }
+                })
+
+            }
+        }
+    });
+</script>
+</body>
+</html>

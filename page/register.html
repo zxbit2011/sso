@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=0.95, user-scalable=no"/>
+    <title>统一注册认证 - 工蜂数据</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/msgbox.css"/>
+    <style type="text/css">
+        .input.is-danger, .textarea.is-danger {
+            border-color: #ff3860;
+        }
+    </style>
+    <script src="../static/js/vue/vue-resource.min.js"></script>
+    <script src="../static/js/vue/locale/zh_CN.js"></script>
+</head>
+<body style="padding-top:90px">
+<div class="loginmask">
+</div>
+
+<form class="form" @submit.prevent="submit">
+    <div id="loginalert">
+        <div class="pd20 loginpd">
+            <div class="login-head">
+                <img src="/static/img/hive-logo.png" style="height: 50px;" class="fl"> <!--- <i>注册</i>-->
+                <div class="fr">
+                    已有账号？<a id="sigup_now" href="/page/login.html">立即登陆</a>
+                </div>
+            </div>
+            <div class="loginwrap clear">
+                <div class="logininput">
+                    <input type="text" name="mobile" class="loginusername" placeholder="请输入您的手机号"
+                           displayName="手机"
+                           v-model="login.mobile"
+                           v-validate="'required|mobile'"
+                           :class="{'input': true, 'is-danger': errors.has('mobile') }"
+                           @keyup="checkRegMobile"
+                    />
+                    <span id="mobile-tip" v-show="errors.has('mobile')" class="help is-danger" style='display:none'>{{ errors.first('mobile') }}</span>
+                    <div class="img_code">
+                        <input type="text" name="img_code" class="fl" placeholder="输入验证码" v-model="login.img_code"
+                               displayName="图形验证码"
+                               v-validate="'required|digits:4'"
+                               :class="{'input': true, 'is-danger': errors.has('img_code') }"/>
+                        <img src="/img/code" id="imgCode" class="fl">
+                        <a @click="changImgCode">看不清楚？换一张</a>
+                    </div>
+                    <span v-show="errors.has('img_code')" class="help is-danger" style='display:none'>{{ errors.first('img_code') }}</span>
+                    <div class="sms_code">
+                        <input type="text" name="sms_code" placeholder="输入短信验证码" v-model="login.sms_code"
+                               displayName="短信验证码"
+                               v-validate="'required|min:4|max:5'"
+                               :class="{'input': true, 'is-danger': errors.has('sms_code') }"/>
+                        <a @click="sendSmsCode">获取验证码</a>
+                    </div>
+                    <span v-show="errors.has('sms_code')" class="help is-danger" style='display:none'>{{ errors.first('sms_code') }}</span>
+                    <input type="password" name="password" class="loginusername" placeholder="密码"
+                           displayName="密码"
+                           v-model="login.password"
+                           v-validate="'required|alpha_dash|max:20'"
+                           :class="{'input': true, 'is-danger': errors.has('password') }"/>
+                    <span v-show="errors.has('password')" class="help is-danger" style='display:none'>{{ errors.first('password') }}</span>
+                    <!--<input type="password" name="password2" class="loginusername" placeholder="确认密码"-->
+                    <!--v-model="login.password2"-->
+                    <!--v-validate="'required|alpha_dash'"-->
+                    <!--:class="{'input': true, 'is-danger': errors.has('password2') }"/>-->
+                    <!--<span v-show="errors.has('password2')" class="help is-danger"-->
+                    <!--style='display:none'>{{ errors.first('password2') }}</span>-->
+                </div>
+                <div class="loginbtn">
+                    <div class="loginsubmit">
+                        <input type="submit" value="注册"/>
+                        <div class="loginsubmiting">
+                            <div class="loginsubmiting_inner">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="logcheckbox fl">
+                        <label>
+                            <input id="bcdl" type="checkbox" checked="true"/>
+                            <a>注册代表同意用户协议</a>
+                        </label>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </div>
+        </div>
+        <div class="thirdlogin">
+            <div class="pd50">
+                <h4>用第三方帐号直接登录</h4>
+                <div class="unlogin">
+                    <ul>
+                        <li id="sinal"><a href="##"><i></i>微博登录</a></li>
+                        <li id="wechatl"><a href="##"><i></i>微信登录</a></li>
+                        <li id="qql" style="margin-right: 0px;"><a href="##"><i></i>QQ登录</a></li>
+                    </ul>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+</form>
+<script src="/static/js/msgbox.js"></script>
+<script src="/static/js/vue/vue.js"></script>
+<script src="/static/js/vue/vee-validate.js"></script>
+<script src="/static/js/vue/locale/zh_CN.js"></script>
+<script src="/static/js/vue/vee-validate-common.js"></script>
+<script src="/static/js/vue/vue-resource.min.js"></script>
+<script>
+    var isMobile = {
+        messages: {
+            zh_CN: function (field, args) {
+                return field + '必须是11位手机号码'
+            }
+        },
+        getMessage: function () {
+            return "必须是11位手机号码";
+        },
+        validate: function (value, args) {
+            if (value.length != 11 || !/^\d{11}$/.test(value)) {
+                return false;
+            }
+            return true;
+        }
+    }
+    //自定义验证
+    VeeValidate.Validator.extend('mobile', isMobile);
+    //语言切换
+    Vue.use(VeeValidate, {
+        locale: "zh_CN"
+    });
+    //数据交互
+    Vue.use(VueResource);
+    Vue.http.options.emulateJSON = true;
+    Vue.http.options.headers = {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    };
+    var v = new Vue({
+            el: '.form',
+            data: {
+                login: {}
+            },
+            methods: {
+                checkRegMobile: function () {
+                    var h = this.$http;
+                    if (this.login.mobile != "" && this.login.mobile != undefined) {
+                        h.post("/pass/checkRegMobile", {mobile: this.login.mobile})
+                            .then(function (data) {
+                                if (data.body.ret != 200) {
+                                    var tip = document.getElementById("mobile-tip");
+                                    tip.innerHTML = data.body.msg;
+                                    tip.style.display = "block";
+                                    //ZENG.msgbox.show(data.body.msg, 2);
+                                }
+                            }).catch(function () {
+                            ZENG.msgbox.show("服务器异常", 2);
+                        });
+                    }
+                },
+                //更换验证码
+                changImgCode: function () {
+                    document.getElementById("imgCode").src = "/img/code?" + Date.parse(new Date())
+                }
+                ,
+                //发送验证码
+                sendSmsCode: function () {
+                    var the = this;
+                    var h = the.$http;
+                    if (this.login.img_code != undefined && this.login.img_code != ""
+                        && this.errors.collect('img_code') == "" && this.login.mobile != ""
+                        && this.login.mobile != undefined) {
+                        ZENG.msgbox.show("发送成功：" + this.login.img_code, 4);
+                        h.post("/pass/regSendSms", {mobile: this.login.mobile, code: this.login.img_code})
+                            .then(function (data) {
+                                if (data.body.ret == 200) {
+                                    ZENG.msgbox.show(data.body.msg, 4);
+                                } else {
+                                    ZENG.msgbox.show(data.body.msg, 2);
+                                }
+
+                            }).catch(function () {
+                            console.log("服务器异常！");
+                        });
+
+                    } else {
+                        if (this.login.mobile == "" || this.login.mobile == undefined) {
+                            ZENG.msgbox.show("请输入手机号码", 1);
+                        }
+                        else if (this.login.img_code == "" || this.login.img_code == undefined) {
+                            ZENG.msgbox.show("请输入图形验证码", 1);
+                        } else {
+                            ZENG.msgbox.show(this.errors.collect('img_code'), 1);
+                        }
+                    }
+
+                }
+                ,
+                //表单提交
+                submit: function () {
+                    var the = this;
+                    var h = the.$http;
+                    this.$validator.validateAll().then(function (f) {
+                        if (f) {
+                            // 这里才是你的表单数据
+                            //请求地址the.login
+                            h.post("/pass/register", the.login).then(function (data) {
+                                if (data.body.ret == 200) {
+                                    ZENG.msgbox.show(data.body.msg, 4);
+                                } else {
+                                    ZENG.msgbox.show(data.body.msg, 1);
+                                }
+
+                            }).catch(function () {
+                                ZENG.msgbox.show("服务器异常", 1);
+                            });
+
+
+                        }
+                    })
+
+                }
+            }
+        })
+    ;
+</script>
+</body>
+</html>
