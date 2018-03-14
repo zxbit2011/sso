@@ -1,3 +1,0 @@
-2017/08/27 22:42:24 [E] [login.go:83] 注册帐号验证码Redis存储错误：redigo: nil returned
-2017/08/27 23:45:50 [E] [login.go:78] 注册帐号验证码Redis存储错误：redigo: nil returned
-2017/08/28 09:32:45 [E] [login.go:78] 注册帐号验证码Redis存储错误：redigo: nil returned
