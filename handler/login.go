@@ -99,10 +99,10 @@ func Register(c echo.Context) error {
 
 var (
 	gatewayUrl      = "http://dysmsapi.aliyuncs.com/"
-	accessKeyId     = "LTAIU8Z42KGdDq9A"
-	accessKeySecret = "5MkVtLr2HZO5iXTd8zB4p7ChOTwuwl"
-	signName        = "工蜂小智"
-	templateCode    = "SMS_83430283"
+	accessKeyId     = ""
+	accessKeySecret = ""
+	signName        = ""
+	templateCode    = ""
 	templateParam   = "{\"code\":\"%s\"}"
 )
 
